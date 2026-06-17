@@ -10,7 +10,7 @@
 </head>
 <body class="theme-gold"> 
 
-<video id="bg-video" autoplay loop playsinline>
+<video id="bg-video" autoplay loop playsinline crossorigin="anonymous">
   <source src="lock_in.mp4" type="video/mp4">
 </video>
 <div id="overlay"></div>
@@ -21,7 +21,7 @@
   <div class="topbar-left">
     <div class="tb-dot"></div>
     <div class="tb-line"></div>
-    <span class="tb-label">Profile</span>
+    <span class="tb-label">Profile Hub</span>
   </div>
   
   <div id="topbar-controls-dock"></div>
@@ -66,46 +66,45 @@
   </div>
 
   <div class="panel" id="main-panel">
+    
     <div class="pane">
       <div class="pane-head">
         <div class="pane-icon discord">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" fill="#5865F2"/>
           </svg>
         </div>
         <div>
-          <div class="pane-platform">Discord</div>
-          <div class="pane-user" id="dc-user"><span class="skeleton-text" style="width:110px;"></span></div>
+          <div class="pane-platform">Discord Connection</div>
+          <div class="pane-user">tanqr_headchot</div>
         </div>
       </div>
 
-      <div class="status-row">
-        <div class="s-dot offline" id="dc-dot"></div>
-        <span class="s-label" id="dc-status"><span class="skeleton-text" style="width:60px;"></span></span>
-        <span class="s-custom" id="dc-custom"></span>
-      </div>
-
-      <div class="activity-row" id="dc-activity">
-        <div class="act-lbl">Currently playing</div>
-        <div class="act-name" id="dc-act-name"></div>
-      </div>
-
       <div class="lanyard-wrap">
-        <img src="https://lanyard.cnrad.dev/api/819598941510959175?theme=dark&idleMessage=Currently%20making%20memories%20with%20my%20favorite%20person%20%E2%9C%A8" alt="Discord presence card">
+        <img src="https://lanyard.cnrad.dev/api/819598941510959175?theme=dark&idleMessage=Currently%20making%20memories%20with%20my%20favorite%20person%20%E2%9C%A8" alt="Discord presence card" style="width: 100%; border-radius: 8px; display: block;">
+      </div>
+
+      <div class="guestbook-area" style="margin-top: auto;">
+        <div class="gb-head">ANONYMOUS SERVER GUESTBOOK</div>
+        <div class="gb-input-wrap">
+          <span class="gb-prompt">&gt;</span>
+          <input type="text" id="gb-field" placeholder="Type message & hit Enter to broadcast..." maxlength="150">
+        </div>
+        <div id="gb-feedback" class="gb-status"></div>
       </div>
     </div>
 
     <div class="pane">
       <div class="pane-head">
         <div class="pane-icon roblox">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
             <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
             <rect x="8.5" y="8.5" width="3" height="3" fill="currentColor"/>
             <rect x="12.5" y="12.5" width="3" height="3" fill="currentColor"/>
           </svg>
         </div>
         <div>
-          <div class="pane-platform">Roblox</div>
+          <div class="pane-platform">Roblox Framework</div>
           <div class="pane-user">tanqr_headchot</div>
         </div>
       </div>
@@ -131,25 +130,28 @@
         </svg>
         <span class="pres-state" id="rblx-pres-state"><span class="skeleton-text" style="width:70px;"></span></span>
         <span class="pres-game" id="rblx-pres-game"></span>
+        
+        <a id="rblx-join-btn" href="roblox://placeId=142823291" class="rblx-join-shortcut hidden">JOIN MM2</a>
+      </div>
+
+      <div class="val-tracker-module">
+        <div class="val-head">VALORANT HUD: SN SonBecks#GameB</div>
+        <div class="val-body">
+          <img id="val-rank-icon" src="https://trackercdn.com/cdn/tracker.gg/valorant/icons/tiersv2/16.png" alt="Rank Level">
+          <div class="val-stats">
+            <div class="val-stat-item">
+              <span class="v-lbl">PEAK RATING:</span> 
+              <span id="val-tier" class="v-val">LOADING...</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="stat-grid">
-        <div class="stat-cell">
-          <div class="stat-lbl">Friends</div>
-          <div class="stat-val" id="rblx-friends"><span class="skeleton-text" style="width:30px;"></span></div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-lbl">Joined</div>
-          <div class="stat-val" id="rblx-joined"><span class="skeleton-text" style="width:40px;"></span></div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-lbl">Status</div>
-          <div class="stat-val" id="rblx-status"><span class="skeleton-text" style="width:50px;"></span></div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-lbl">User ID</div>
-          <div class="stat-val" id="rblx-uid"><span class="skeleton-text" style="width:65px;"></span></div>
-        </div>
+        <div class="stat-cell"><div class="stat-lbl">Friends</div><div class="stat-val" id="rblx-friends"><span class="skeleton-text" style="width:30px;"></span></div></div>
+        <div class="stat-cell"><div class="stat-lbl">Joined</div><div class="stat-val" id="rblx-joined"><span class="skeleton-text" style="width:40px;"></span></div></div>
+        <div class="stat-cell"><div class="stat-lbl">Status</div><div class="stat-val" id="rblx-status"><span class="skeleton-text" style="width:50px;"></span></div></div>
+        <div class="stat-cell"><div class="stat-lbl">User ID</div><div class="stat-val" id="rblx-uid"><span class="skeleton-text" style="width:65px;"></span></div></div>
       </div>
     </div>
   </div>
@@ -167,12 +169,13 @@
 </div>
 
 <div class="audio-controls hud-element">
-  <button id="mute-btn" class="audio-toggle-btn" title="Mute/Unmute Audio">
+  <button id="mute-btn" class="audio-toggle-btn" title="Toggle Sound / Hook Analyzer">
     <div id="music-waveform" class="waveform-container">
-      <span class="bar"></span>
-      <span class="bar"></span>
-      <span class="bar"></span>
-      <span class="bar"></span>
+      <span class="bar" style="--i:0"></span>
+      <span class="bar" style="--i:1"></span>
+      <span class="bar" style="--i:2"></span>
+      <span class="bar" style="--i:3"></span>
+      <span class="bar" style="--i:4"></span>
     </div>
   </button>
   <div class="slider-container">

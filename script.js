@@ -1,41 +1,77 @@
 var API = window.location.port === '3000' ? '' : 'http://localhost:3000';
 
-// ── DATA FETCH RUNNERS ──
-async function loadDiscord() {
+// Webhook for Anonymous Guestbook Endpoint 
+var DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1516672212705218581/D9Y-gxXunyaWh00R0ForIJ5_yJqL4PRZz_8teGpW36pYPmP-eBvUdBLHhXKfwBC1L1IO";
+
+// ── AUDIO HARDWARE CONNECTOR (DYNAMIC RECONSTRUCTED MATRIX VISUALIZER) ──
+var audioCtx = null;
+var analyzer = null;
+var sourceNode = null;
+var frequencyData = null;
+var isVisualizerSetup = false;
+
+function setupAudioVisualizer(videoElement) {
+  if (isVisualizerSetup) return;
+  try {
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+    analyzer = audioCtx.createAnalyser();
+    analyzer.fftSize = 32; 
+    
+    sourceNode = audioCtx.createMediaElementSource(videoElement);
+    sourceNode.connect(analyzer);
+    analyzer.connect(audioCtx.destination);
+    
+    frequencyData = new Uint8Array(analyzer.frequencyBinCount);
+    isVisualizerSetup = true;
+    renderFrequencies();
+  } catch (e) {
+    console.warn("Visualizer processing thread waiting for security interaction click.");
+  }
+}
+
+function renderFrequencies() {
+  if (!isVisualizerSetup || !analyzer) return;
+  requestAnimationFrame(renderFrequencies);
+  
+  var video = document.getElementById('bg-video');
+  var waveform = document.getElementById('music-waveform');
+  var bars = waveform.querySelectorAll('.bar');
+  
+  if (video.muted || video.paused) {
+    bars.forEach(function(bar) { bar.style.height = '3px'; });
+    return;
+  }
+  
+  analyzer.getByteFrequencyData(frequencyData);
+  
+  bars.forEach(function(bar, idx) {
+    var rawVal = frequencyData[idx * 2] || 0; 
+    var heightPercentage = Math.min(Math.max((rawVal / 255) * 14, 3), 14);
+    bar.style.height = heightPercentage + 'px';
+  });
+}
+
+// ── GENERAL LOG HUB ENDPOINTS ──
+async function loadDiscordState() {
   try {
     var res = await fetch('https://api.lanyard.rest/v1/users/819598941510959175');
     var json = await res.json();
-    if (!json.success) return;
-    var data = json.data;
-    var u = data.discord_user;
-
-    document.getElementById('dc-user').textContent = u.global_name || u.username || 'tanqr_headchot';
-    var s = data.discord_status || 'offline';
+    if (!json || !json.success) return;
+    var s = json.data.discord_status || 'offline';
     var sMap = { online: 'Online', idle: 'Idle', dnd: 'Do Not Disturb', offline: 'Offline' };
-    document.getElementById('dc-dot').className = 's-dot ' + s;
-    document.getElementById('dc-status').textContent = sMap[s] || s;
-
-    var acts = data.activities || [];
-    var custom = acts.find(function(a) { return a.type === 4; });
-    if (custom && custom.state) {
-      document.getElementById('dc-custom').textContent = custom.state.slice(0, 32);
-    }
-
-    var playing = acts.find(function(a) { return a.type === 0 || a.type === 2; });
-    if (playing) {
-      document.getElementById('dc-activity').style.display = 'block';
-      document.getElementById('dc-act-name').textContent = playing.name;
-    }
-
+    
     var dot = document.getElementById('tb-dc-dot');
-    if (s === 'online')  { dot.style.background = '#4ade80'; dot.style.boxShadow = '0 0 4px rgba(74,222,128,0.45)'; }
-    if (s === 'idle')    { dot.style.background = '#f59e0b'; dot.style.boxShadow = 'none'; }
-    if (s === 'dnd')     { dot.style.background = '#ef4444'; dot.style.boxShadow = 'none'; }
-    if (s === 'offline') { dot.style.background = 'rgba(255,255,255,0.15)'; dot.style.boxShadow = 'none'; }
-    document.getElementById('tb-dc-lbl').textContent = sMap[s] || 'Discord';
+    if (dot) {
+      if (s === 'online')  { dot.style.background = '#4ade80'; dot.style.boxShadow = '0 0 4px rgba(74,222,128,0.45)'; }
+      else if (s === 'idle')    { dot.style.background = '#f59e0b'; dot.style.boxShadow = 'none'; }
+      else if (s === 'dnd')     { dot.style.background = '#ef4444'; dot.style.boxShadow = 'none'; }
+      else { dot.style.background = 'rgba(255,255,255,0.15)'; dot.style.boxShadow = 'none'; }
+    }
+    var lbl = document.getElementById('tb-dc-lbl');
+    if (lbl) lbl.textContent = sMap[s] || 'Discord';
   } catch (e) {
-    document.getElementById('dc-user').textContent = 'tanqr_headchot';
-    document.getElementById('dc-status').textContent = 'Unavailable';
+    console.log("Status bar check bypass.");
   }
 }
 
@@ -77,13 +113,18 @@ async function loadRoblox() {
       body: JSON.stringify({ userIds: [uid] })
     }).then(function(r) { return r.json(); }).then(function(d) {
       var p = d && d.userPresences ? d.userPresences[0] : null;
+      var shortcutBtn = document.getElementById('rblx-join-btn');
       if (p) {
         var presMap = { 0: 'Offline', 1: 'Online', 2: 'In Game', 3: 'In Studio' };
         var label = presMap[p.userPresenceType] || 'Unknown';
         document.getElementById('rblx-pres-state').textContent = label;
         document.getElementById('rblx-status').textContent = label;
-        if (p.lastLocation && p.userPresenceType === 2) {
+        if (p.lastLocation) {
           document.getElementById('rblx-pres-game').textContent = p.lastLocation.slice(0, 18);
+        }
+        if (shortcutBtn) {
+          if (p.userPresenceType === 1 || p.userPresenceType === 2) { shortcutBtn.classList.remove('hidden'); }
+          else { shortcutBtn.classList.add('hidden'); }
         }
       }
     });
@@ -92,22 +133,62 @@ async function loadRoblox() {
 
 async function fetchJSON(url) { try { var r = await fetch(url); return r.ok ? await r.json() : null; } catch (e) { return null; } }
 function showRblxFail() {
-  document.getElementById('rblx-pres-state').textContent = 'Api not running';
+  document.getElementById('rblx-pres-state').textContent = 'Live System Offline';
   ['rblx-friends', 'rblx-joined', 'rblx-status', 'rblx-uid'].forEach(function(id) { document.getElementById(id).textContent = '—'; });
 }
 
-// ── MAIN RUNTIME ARCHITECTURE ──
+// ── VALORANT LIVE PARSE SCROLLER CONNECTION (PEAK RATING MAP EXTRACTOR) ──
+async function loadValorantStats() {
+  try {
+    var targetPlayer = encodeURIComponent('SN SonBecks#GameB');
+    var apiKey = "pmx_bee4a5a1f5ead9cc1cb9243a8512a4cd"; 
+
+    var response = await fetch(`https://api.parse.bot/scraper/6517942a-644e-4cbc-9349-6e6d5ddaa622/get_player_profile?player_id=${targetPlayer}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn("Parser gateway route rejected or busy.");
+      return;
+    }
+    
+    var json = await response.json();
+    
+    // Drill straight down into the validated API segments data object matrix
+    if (json && json.data && json.data.segments && json.data.segments[1]) {
+      var peakSegment = json.data.segments[1];
+      
+      if (peakSegment.type === "peak-rating" && peakSegment.stats && peakSegment.stats.peakRating) {
+        var ratingData = peakSegment.stats.peakRating;
+        
+        // Inject the verified textual string ("Platinum 2")
+        if (ratingData.displayValue) {
+          document.getElementById('val-tier').textContent = ratingData.displayValue.toUpperCase();
+        }
+        
+        // Inject the verified tracking badge asset link from the nested metadata cluster
+        if (ratingData.metadata && ratingData.metadata.iconUrl) {
+          document.getElementById('val-rank-icon').src = ratingData.metadata.iconUrl;
+        }
+      }
+    }
+  } catch(e) {
+    console.log("Scraper interface parsing exception occurred.", e);
+  }
+}
+// ── MAIN APPLICATION RUNTIME ──
 document.addEventListener('DOMContentLoaded', function() {
   var video = document.getElementById('bg-video');
-  
-  // Controls Position Anchors
   var controlsBox = document.getElementById('controls-wrapper-box');
   var topbarDock = document.getElementById('topbar-controls-dock');
   var pageContainer = document.querySelector('.page');
   var toggleVideoBtn = document.getElementById('toggle-video-btn');
   var btnText = toggleVideoBtn.querySelector('.btn-text');
 
-  // Built-in Accent Variations
   var themeBtn = document.getElementById('theme-cycle-btn');
   var themeLabel = document.getElementById('theme-label');
   var themes = [
@@ -118,13 +199,11 @@ document.addEventListener('DOMContentLoaded', function() {
   ];
   var currentThemeIndex = 0;
 
-  // NEW: VIDEO PLAYLIST MANAGEMENT ENGINE
   var videos = ['lock_in.mp4', 'kira.mp4', 'goku_edit.mp4', 'darkside.mp4'];
   var currentVideoIndex = 0;
   var prevVideoBtn = document.getElementById('prev-video-btn');
   var nextVideoBtn = document.getElementById('next-video-btn');
 
-  // Media Interface Elements
   var muteBtn = document.getElementById('mute-btn');
   var volumeSlider = document.getElementById('volume-slider');
   var musicWaveform = document.getElementById('music-waveform');
@@ -134,42 +213,80 @@ document.addEventListener('DOMContentLoaded', function() {
   var iconPlay = playBtn.querySelector('.icon-play');
   var iconPause = playBtn.querySelector('.icon-pause');
 
-  // Default Fallbacks
   video.volume = 0.1; volumeSlider.value = 0.1;
   var lastVolumeValue = 0.1; video.muted = true;
 
-  // RE-INDEX VIDEO METHOD
   function switchVideo(index) {
     currentVideoIndex = (index + videos.length) % videos.length;
-    
-    // Smooth transition trick: pause, switch track source, update and reload
     video.pause();
     var source = video.querySelector('source');
     if (source) {
       source.src = videos[currentVideoIndex];
       video.load();
+      video.setAttribute('crossorigin', 'anonymous');
       
-      // Keep track of audio states instantly on reload
       if (!video.paused) {
         iconPause.style.display = 'block';
         iconPlay.style.display = 'none';
       }
-      video.play().catch(function(err) { console.log("Playback engine waiting hook auto call"); });
+      video.play().then(function() {
+        if(audioCtx) audioCtx.resume();
+      }).catch(function(e) { console.log("Unlock state interaction trigger required."); });
     }
   }
 
-  // Hooking Arrow Actions
-  prevVideoBtn.addEventListener('click', function(e) {
-    e.stopPropagation(); // Avoid triggering screen movement timers
-    switchVideo(currentVideoIndex - 1);
-  });
+  prevVideoBtn.addEventListener('click', function(e) { e.stopPropagation(); switchVideo(currentVideoIndex - 1); });
+  nextVideoBtn.addEventListener('click', function(e) { e.stopPropagation(); switchVideo(currentVideoIndex + 1); });
 
-  nextVideoBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    switchVideo(currentVideoIndex + 1);
-  });
+  // ANONYMOUS GUESTBOOK DISCORD INTEGRATION HOOK
+  var gbField = document.getElementById('gb-field');
+  var gbFeedback = document.getElementById('gb-feedback');
+  
+  if (gbField) {
+    gbField.addEventListener('keydown', async function(e) {
+      if (e.key === 'Enter') {
+        var msg = gbField.value.trim();
+        if (!msg) return;
+        
+        gbField.disabled = true;
+        gbFeedback.textContent = "TRANSMITTING TO DISCORD CORE...";
+        
+        try {
+          var payload = {
+            embeds: [{
+              title: "📡 New Website Guestbook Entry",
+              description: "```\n" + msg + "\n```",
+              color: 13216110, 
+              timestamp: new Date().toISOString(),
+              footer: { text: "Terminal Broadcast System" }
+            }]
+          };
+          
+          var response = await fetch(DISCORD_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          
+          if (response.ok) {
+            gbFeedback.textContent = "TRANSMISSION SUCCESSFUL.";
+            gbField.value = "";
+          } else {
+            gbFeedback.textContent = "TRANSMISSION FAILED. SERVER DROPPED.";
+          }
+        } catch (err) {
+          gbFeedback.textContent = "NET ERROR. WEBHOOK CONNECTION TIMEOUT.";
+        }
+        
+        setTimeout(function() {
+          gbField.disabled = false;
+          gbFeedback.textContent = "";
+          gbField.focus();
+        }, 3000);
+      }
+    });
+  }
 
-  // CONTROLS TELEPORTATION LOGIC
   function adjustControlsPosition(isFocused) {
     if (isFocused) {
       controlsBox.classList.add('docked-top');
@@ -182,7 +299,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   toggleVideoBtn.addEventListener('click', function() {
     var isFocused = document.body.classList.toggle('video-focused');
-    
     if (isFocused) {
       btnText.textContent = 'Show Card';
       adjustControlsPosition(true);
@@ -195,7 +311,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // PRESET CYCLER
   themeBtn.addEventListener('click', function() {
     document.body.classList.remove(themes[currentThemeIndex].class);
     currentThemeIndex = (currentThemeIndex + 1) % themes.length;
@@ -203,8 +318,10 @@ document.addEventListener('DOMContentLoaded', function() {
     themeLabel.textContent = themes[currentThemeIndex].label;
   });
 
-  // MEDIA HARDWARE HOOKS
   muteBtn.addEventListener('click', function() {
+    setupAudioVisualizer(video);
+    if(audioCtx) audioCtx.resume();
+
     if (video.muted) {
       video.muted = false;
       if(video.volume === 0) { video.volume = lastVolumeValue || 0.1; volumeSlider.value = video.volume; }
@@ -215,6 +332,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   volumeSlider.addEventListener('input', function(e) {
+    setupAudioVisualizer(video);
+    if(audioCtx) audioCtx.resume();
     var val = parseFloat(e.target.value); video.volume = val;
     if (val > 0) { video.muted = false; lastVolumeValue = val; musicWaveform.classList.add('playing'); }
     else { video.muted = true; musicWaveform.classList.remove('playing'); }
@@ -238,7 +357,6 @@ document.addEventListener('DOMContentLoaded', function() {
     timelineBubble.style.left = (percent * 100) + '%';
   });
 
-  // SMART INTERFACE HUD HOVER DIMMER TIMEOUT MECHANICS
   var idleTimer;
   function resetIdleTimer() {
     if (!document.body.classList.contains('video-focused')) { showAllHUD(); return; }
@@ -250,5 +368,9 @@ document.addEventListener('DOMContentLoaded', function() {
   ['mousemove', 'keydown', 'click'].forEach(function(ev) { window.addEventListener(ev, resetIdleTimer); });
 });
 
-loadDiscord(); loadRoblox();
-setInterval(loadDiscord, 30000); setInterval(loadRoblox, 60000);
+// INITIALIZATION LOG
+// INITIALIZATION LOG
+loadDiscordState(); loadRoblox(); loadValorantStats();
+setInterval(loadDiscordState, 15000); 
+setInterval(loadRoblox, 60000);
+setInterval(loadValorantStats, 120000); // Check the parser for updates every 2 minutes!
