@@ -175,7 +175,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   /* ── Static file server ── */
-  let filePath = pathname === '/' ? '/profile.html' : pathname;
+  let filePath = pathname === '/' ? '/index.html' : pathname;
   filePath = path.join(__dirname, filePath);
 
   /* Security: prevent path traversal */
@@ -186,7 +186,7 @@ const server = http.createServer(async (req, res) => {
   fs.stat(filePath, (err, stat) => {
     if (err || !stat.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end(`File not found: ${pathname}\n\nMake sure profile.html and bg.mp4 are in the same folder as server.js`);
+      res.end(`File not found: ${pathname}\n\nMake sure index.html and mp4 files are in the same folder as server.js`);
       return;
     }
 

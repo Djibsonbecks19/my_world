@@ -1,6 +1,6 @@
 import { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit } from "./firebaseConfig.js";
 
-var API = window.location.port === '3000' ? '' : 'http://localhost:3000';
+var API = 'https://my-world-scfp.onrender.com';
 
 // Webhook for Anonymous Guestbook Endpoint 
 var DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1516672212705218581/D9Y-gxXunyaWh00R0ForIJ5_yJqL4PRZz_8teGpW36pYPmP-eBvUdBLHhXKfwBC1L1IO";
