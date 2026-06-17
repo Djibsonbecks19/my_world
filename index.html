@@ -10,14 +10,12 @@
 </head>
 <body>
 
-<!-- VIDEO BACKGROUND — rename your anime edit video to bg.mp4 and place it in the same folder -->
-<video id="bg-video" autoplay muted loop playsinline>
+<video id="bg-video" autoplay loop playsinline>
   <source src="darkside.mp4" type="video/mp4">
 </video>
 <div id="overlay"></div>
 <div id="vignette"></div>
 
-<!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-left">
     <div class="tb-dot"></div>
@@ -36,11 +34,20 @@
   </div>
 </div>
 
-<!-- MAIN PANEL -->
 <div class="page">
-  <div class="panel">
+  
+  <div class="video-toggle-container">
+    <button id="toggle-video-btn" class="video-btn">
+      <span class="btn-text">See Video</span>
+      <span class="btn-icon">
+        <svg class="icon-arrow icon-down" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        <svg class="icon-arrow icon-up" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </span>
+    </button>
+  </div>
 
-    <!-- DISCORD PANE -->
+  <div class="panel" id="main-panel">
+
     <div class="pane">
 
       <div class="pane-head">
@@ -75,7 +82,6 @@
 
     </div>
 
-    <!-- ROBLOX PANE -->
     <div class="pane">
 
       <div class="pane-head">
@@ -136,9 +142,16 @@
 
     </div>
 
+  </div>
+</div>
 
-    
-
+<div class="audio-controls">
+  <button id="mute-btn" class="audio-toggle-btn" title="Mute/Unmute Audio">
+    <svg class="volume-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+    <svg class="volume-icon-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+  </button>
+  <div class="slider-container">
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.1">
   </div>
 </div>
 
