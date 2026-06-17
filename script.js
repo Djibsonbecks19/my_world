@@ -125,29 +125,36 @@ function showRblxFail() {
   });
 }
 
-// ── AUDIO & TOGGLE EVENT INITIALIZER ──
+// ── INTERACTIVE INTERFACES INITIALIZER ──
 document.addEventListener('DOMContentLoaded', function() {
   var video = document.getElementById('bg-video');
+  
+  // Audio UI Selectors
   var muteBtn = document.getElementById('mute-btn');
   var volumeSlider = document.getElementById('volume-slider');
-  var toggleVideoBtn = document.getElementById('toggle-video-btn');
-  var btnText = toggleVideoBtn.querySelector('.btn-text');
-  
   var iconOn = muteBtn.querySelector('.volume-icon-on');
   var iconMuted = muteBtn.querySelector('.volume-icon-muted');
   
-  // Set default audio volume level explicitly to 10%
+  // Video Media UI Selectors
+  var playBtn = document.getElementById('play-btn');
+  var videoProgress = document.getElementById('video-progress');
+  var iconPlay = playBtn.querySelector('.icon-play');
+  var iconPause = playBtn.querySelector('.icon-pause');
+  
+  var toggleVideoBtn = document.getElementById('toggle-video-btn');
+  var btnText = toggleVideoBtn.querySelector('.btn-text');
+
+  // SAFE ANTI-JUMPSCARE CONFIGURATION: Keep muted on launch 
   var defaultVolume = 0.1;
   video.volume = defaultVolume;
   volumeSlider.value = defaultVolume;
   var lastVolumeValue = defaultVolume;
 
-  // Handle browser autoplay policies (start muted)
   video.muted = true;
   iconOn.style.display = 'none';
   iconMuted.style.display = 'block';
 
-  // Toggle Mute Handler
+  // ── RIGHT ALIGNED AUDIO EVENTS ──
   muteBtn.addEventListener('click', function() {
     if (video.muted) {
       video.muted = false;
@@ -164,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Slider Input Adjuster
   volumeSlider.addEventListener('input', function(e) {
     var val = parseFloat(e.target.value);
     video.volume = val;
@@ -180,12 +186,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Action Button Click - Unmutes if needed, changes text, hides card/overlays
+  // ── LEFT ALIGNED VIDEO PLAYBACK EVENTS ──
+  playBtn.addEventListener('click', function() {
+    if (video.paused) {
+      video.play();
+      iconPause.style.display = 'block';
+      iconPlay.style.display = 'none';
+    } else {
+      video.pause();
+      iconPause.style.display = 'none';
+      iconPlay.style.display = 'block';
+    }
+  });
+
+  // Automatically update progress slider timeline as video plays natively
+  video.addEventListener('timeupdate', function() {
+    if (!video.duration) return;
+    var percentage = (video.currentTime / video.duration) * 100;
+    videoProgress.value = percentage;
+  });
+
+  // Drag/Click specific track lines to jump directly to target timeline positions
+  videoProgress.addEventListener('input', function(e) {
+    if (!video.duration) return;
+    var targetTime = (parseFloat(e.target.value) / 100) * video.duration;
+    video.currentTime = targetTime;
+  });
+
+  // ── MAIN UPPER TOGGLE CONTROLLER (CARD TOGGLE) ──
   toggleVideoBtn.addEventListener('click', function() {
+    // Unmutes context gracefully ONLY if user explicitly wants to listen to it
     if (video.muted && video.volume > 0) {
-      video.muted = false;
-      iconOn.style.display = 'block';
-      iconMuted.style.display = 'none';
+      // Uncomment lines below if you want "See Video" to automatically turn on sound:
+      // video.muted = false;
+      // iconOn.style.display = 'block';
+      // iconMuted.style.display = 'none';
     }
     
     var isFocused = document.body.classList.toggle('video-focused');
