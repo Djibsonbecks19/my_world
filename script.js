@@ -1,4 +1,4 @@
-import { db, collection, addDoc, serverTimestamp } from "./firebaseConfig.js";
+import { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit } from "./firebaseConfig.js";
 
 var API = window.location.port === '3000' ? '' : 'http://localhost:3000';
 
@@ -53,6 +53,30 @@ function renderFrequencies() {
     bar.style.height = heightPercentage + 'px';
   });
 }
+
+// ── LIVE GUESTBOOK FEED ENGINE ──
+function setupLiveFeed() {
+  const feedContainer = document.getElementById('gb-live-feed'); // Make sure you have this <div> in your HTML!
+  
+  if (!feedContainer) return;
+
+  // Query: Get messages, sorted by timestamp, limit to latest 10
+  const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(10));
+
+  onSnapshot(q, (snapshot) => {
+    feedContainer.innerHTML = ''; // Clear current list
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const div = document.createElement('div');
+      div.className = 'feed-item';
+      div.textContent = `> ${data.text}`;
+      feedContainer.appendChild(div);
+    });
+  });
+}
+
+// Start the listener when the page loads
+setupLiveFeed();
 
 // ── GENERAL LOG HUB ENDPOINTS ──
 async function loadDiscordState() {

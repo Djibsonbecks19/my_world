@@ -1,5 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// FIX: Ensure you are importing these specific functions from the firestore module
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  serverTimestamp, 
+  onSnapshot, 
+  query, 
+  orderBy, 
+  limit 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCXQr6uxyuSJkbunaZRnN2dXMa8sR8qW0Q",
@@ -16,4 +26,4 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Export db and firestore helpers so script.js can use them
-export { db, collection, addDoc, serverTimestamp };
+export { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit };
