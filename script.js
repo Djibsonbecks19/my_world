@@ -58,16 +58,30 @@ async function loadDiscordState() {
     var res = await fetch('https://api.lanyard.rest/v1/users/819598941510959175');
     var json = await res.json();
     if (!json || !json.success) return;
+    
     var s = json.data.discord_status || 'offline';
     var sMap = { online: 'Online', idle: 'Idle', dnd: 'Do Not Disturb', offline: 'Offline' };
     
     var dot = document.getElementById('tb-dc-dot');
     if (dot) {
-      if (s === 'online')  { dot.style.background = '#4ade80'; dot.style.boxShadow = '0 0 4px rgba(74,222,128,0.45)'; }
-      else if (s === 'idle')    { dot.style.background = '#f59e0b'; dot.style.boxShadow = 'none'; }
-      else if (s === 'dnd')     { dot.style.background = '#ef4444'; dot.style.boxShadow = 'none'; }
-      else { dot.style.background = 'rgba(255,255,255,0.15)'; dot.style.boxShadow = 'none'; }
+      if (s === 'online') { 
+        dot.style.background = '#00ff66'; 
+        dot.style.boxShadow = '0 0 8px #00ff66, 0 0 15px #00ff66'; 
+      }
+      else if (s === 'idle') { 
+        dot.style.background = '#f59e0b'; 
+        dot.style.boxShadow = '0 0 6px #f59e0b'; 
+      }
+      else if (s === 'dnd') { 
+        dot.style.background = '#ef4444'; 
+        dot.style.boxShadow = '0 0 6px #ef4444'; 
+      }
+      else { 
+        dot.style.background = '#ff3333'; 
+        dot.style.boxShadow = '0 0 6px #ff3333'; 
+      }
     }
+    
     var lbl = document.getElementById('tb-dc-lbl');
     if (lbl) lbl.textContent = sMap[s] || 'Discord';
   } catch (e) {

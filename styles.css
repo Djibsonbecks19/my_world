@@ -204,12 +204,25 @@ body.video-focused .panel { display: none !important; }
 #volume-slider { -webkit-appearance: none; appearance: none; width: 100%; background: rgba(255, 255, 255, 0.15); height: 3px; border-radius: 2px; outline: none; cursor: pointer; }
 #volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 
+
+/* HUD Indicator Glow States */
+.tb-ind.online {
+  background-color: #00ff66 !important;
+  box-shadow: 0 0 8px #00ff66, 0 0 15px #00ff66;
+}
+
+.tb-ind.offline {
+  background-color: #ff3333 !important;
+  box-shadow: 0 0 6px #ff3333;
+}
+
 @media (max-width: 640px) {
   .panel { grid-template-columns: 1fr; }
   .pane + .pane { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.06); }
   .edge-arrow-btn.left-side { left: 8px; }
   .edge-arrow-btn.right-side { right: 8px; }
 }
+
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes loadingPulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
