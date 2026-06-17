@@ -188,6 +188,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end(`File not found: ${pathname}\n\nMake sure index.html and mp4 files are in the same folder as server.js`);
       return;
+      
     }
 
     const ext = path.extname(filePath).toLowerCase();
