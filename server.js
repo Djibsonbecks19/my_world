@@ -85,8 +85,8 @@ const MIME = {
 };
 
 const server = http.createServer(async (req, res) => {
-  const parsed = url.parse(req.url, true);
-  const pathname = parsed.pathname;
+const parsed = new URL(req.url, `http://${req.headers.host}`);
+const pathname = parsed.pathname;
 
   /* CORS headers for all responses */
   res.setHeader('Access-Control-Allow-Origin', '*');
