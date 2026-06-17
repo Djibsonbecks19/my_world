@@ -1,0 +1,376 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  min-height: 100vh;
+  background: #080808;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #f0ece4;
+  overflow-x: hidden;
+}
+
+/* === VIDEO BACKGROUND === */
+/* Put your video in the same folder as this file, named: bg.mp4 */
+#bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Dark layer over video so cards are readable */
+#overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: rgba(4, 3, 2, 0.65);
+}
+
+/* Soft vignette around edges */
+#vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%);
+}
+
+/* === PAGE SHELL === */
+.page {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 24px 32px;
+}
+
+/* === TOP BAR === */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tb-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c9a96e;
+  flex-shrink: 0;
+}
+
+.tb-line {
+  width: 32px;
+  height: 1px;
+  background: rgba(201, 169, 110, 0.35);
+}
+
+.tb-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.tb-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.tb-ind {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+/* === FROSTED GLASS PANEL === */
+/* Both cards sit inside this — video shows through edges */
+.panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  backdrop-filter: blur(24px) saturate(0.85);
+  -webkit-backdrop-filter: blur(24px) saturate(0.85);
+  width: 100%;
+  max-width: 860px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(201, 169, 110, 0.05);
+  animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* === PANE (each half) === */
+.pane {
+  background: rgba(12, 10, 8, 0.55);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pane + .pane {
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* === PANE HEADER === */
+.pane-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pane-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pane-icon.discord {
+  background: rgba(88, 101, 242, 0.18);
+  border: 1px solid rgba(88, 101, 242, 0.22);
+}
+
+.pane-icon.roblox {
+  background: rgba(201, 169, 110, 0.1);
+  border: 1px solid rgba(201, 169, 110, 0.18);
+}
+
+.pane-platform {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.28);
+  margin-bottom: 2px;
+}
+
+.pane-user {
+  font-size: 16px;
+  font-weight: 500;
+  color: #f0ece4;
+  letter-spacing: -0.2px;
+}
+
+/* === STATUS ROW === */
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+}
+
+.s-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.s-dot.online  { background: #4ade80; box-shadow: 0 0 5px rgba(74, 222, 128, 0.4); }
+.s-dot.idle    { background: #f59e0b; box-shadow: 0 0 5px rgba(245, 158, 11, 0.35); }
+.s-dot.dnd     { background: #ef4444; box-shadow: 0 0 5px rgba(239, 68, 68, 0.35); }
+.s-dot.offline { background: rgba(255, 255, 255, 0.2); }
+
+.s-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.s-custom {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: auto;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === ACTIVITY ROW === */
+.activity-row {
+  padding: 9px 13px;
+  background: rgba(88, 101, 242, 0.06);
+  border: 1px solid rgba(88, 101, 242, 0.1);
+  border-radius: 8px;
+  display: none;
+}
+
+.act-lbl {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+  margin-bottom: 3px;
+}
+
+.act-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* === LANYARD EMBED === */
+.lanyard-wrap {
+  border-radius: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lanyard-wrap img {
+  width: 100%;
+  display: block;
+}
+
+/* === ROBLOX TOP STRIP === */
+.rblx-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rblx-av {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(201, 169, 110, 0.07);
+  border: 1px solid rgba(201, 169, 110, 0.14);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rblx-av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.rblx-display {
+  font-size: 14px;
+  font-weight: 500;
+  color: #f0ece4;
+}
+
+.rblx-handle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.28);
+  margin-top: 2px;
+}
+
+/* === PRESENCE ROW === */
+.presence-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  background: rgba(201, 169, 110, 0.05);
+  border: 1px solid rgba(201, 169, 110, 0.1);
+  border-radius: 8px;
+}
+
+.pres-icon {
+  color: rgba(201, 169, 110, 0.6);
+  flex-shrink: 0;
+}
+
+.pres-state {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.pres-game {
+  font-size: 12px;
+  font-weight: 500;
+  color: #c9a96e;
+  margin-left: auto;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === STAT GRID === */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.stat-cell {
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 7px;
+}
+
+.stat-lbl {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+  margin-bottom: 4px;
+}
+
+.stat-val {
+  font-size: 14px;
+  font-weight: 500;
+  color: #f0ece4;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  .panel {
+    grid-template-columns: 1fr;
+  }
+  .pane + .pane {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .page {
+    padding: 72px 16px 32px;
+  }
+}
+
+/* === ANIMATION === */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
