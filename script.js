@@ -1,3 +1,5 @@
+import { db, collection, addDoc, serverTimestamp } from "./firebaseConfig.js";
+
 var API = window.location.port === '3000' ? '' : 'http://localhost:3000';
 
 // Webhook for Anonymous Guestbook Endpoint 
@@ -194,6 +196,7 @@ async function loadValorantStats() {
     console.log("Scraper interface parsing exception occurred.", e);
   }
 }
+
 // ── MAIN APPLICATION RUNTIME ──
 document.addEventListener('DOMContentLoaded', function() {
   var video = document.getElementById('bg-video');
@@ -252,51 +255,57 @@ document.addEventListener('DOMContentLoaded', function() {
   prevVideoBtn.addEventListener('click', function(e) { e.stopPropagation(); switchVideo(currentVideoIndex - 1); });
   nextVideoBtn.addEventListener('click', function(e) { e.stopPropagation(); switchVideo(currentVideoIndex + 1); });
 
-  // ANONYMOUS GUESTBOOK DISCORD INTEGRATION HOOK
-  var gbField = document.getElementById('gb-field');
-  var gbFeedback = document.getElementById('gb-feedback');
-  
-  if (gbField) {
-    gbField.addEventListener('keydown', async function(e) {
-      if (e.key === 'Enter') {
-        var msg = gbField.value.trim();
-        if (!msg) return;
+  // ── GUESTBOOK FIREBASE + DISCORD DUAL BROADCAST ENGINE ──
+  const guestbookField = document.getElementById('gb-field');
+  const guestbookFeedback = document.getElementById('gb-feedback');
+
+  if (guestbookField) {
+    guestbookField.addEventListener('keydown', async (event) => {
+      if (event.key === 'Enter') {
+        const messageText = guestbookField.value.trim();
         
-        gbField.disabled = true;
-        gbFeedback.textContent = "TRANSMITTING TO DISCORD CORE...";
-        
+        if (!messageText) return;
+
         try {
-          var payload = {
-            embeds: [{
-              title: "📡 New Website Guestbook Entry",
-              description: "```\n" + msg + "\n```",
-              color: 13216110, 
-              timestamp: new Date().toISOString(),
-              footer: { text: "Terminal Broadcast System" }
-            }]
-          };
-          
-          var response = await fetch(DISCORD_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          
-          if (response.ok) {
-            gbFeedback.textContent = "TRANSMISSION SUCCESSFUL.";
-            gbField.value = "";
-          } else {
-            gbFeedback.textContent = "TRANSMISSION FAILED. SERVER DROPPED.";
+          guestbookFeedback.textContent = "BROADCASTING TO CHANNELS...";
+          guestbookFeedback.style.color = "var(--accent-color, #f59e0b)";
+
+          // PIPELINE 1: Direct Webhook out to Discord (Independent)
+          try {
+            await fetch(DISCORD_WEBHOOK, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                content: `📡 **[Guestbook Transmission]:** ${messageText}`
+              })
+            });
+          } catch (discordError) {
+            console.warn("Discord direct webhook pipeline issue:", discordError);
           }
-        } catch (err) {
-          gbFeedback.textContent = "NET ERROR. WEBHOOK CONNECTION TIMEOUT.";
+
+          // PIPELINE 2: Cloud Firestore Backup (Isolated so it won't crash Discord)
+          try {
+            await addDoc(collection(db, "messages"), {
+              text: messageText,
+              timestamp: serverTimestamp()
+            });
+          } catch (firebaseError) {
+            console.error("Firebase cloud backup paused (Check your Firestore Rules):", firebaseError);
+            // We don't throw the error here, so the UI still hits success for your webhook!
+          }
+
+          // Clear layout panel inputs on success
+          guestbookField.value = '';
+          guestbookFeedback.textContent = "TRANSMISSION SUCCESSFUL.";
+          guestbookFeedback.style.color = "#00ff66"; // Success Neon Green
+          
+          setTimeout(() => { guestbookFeedback.textContent = ''; }, 3000);
+
+        } catch (error) {
+          console.error("Critical stream routing breakdown:", error);
+          guestbookFeedback.textContent = "TRANSMISSION MISROUTED.";
+          guestbookFeedback.style.color = "#ef4444";
         }
-        
-        setTimeout(function() {
-          gbField.disabled = false;
-          gbFeedback.textContent = "";
-          gbField.focus();
-        }, 3000);
       }
     });
   }
@@ -383,8 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // INITIALIZATION LOG
-// INITIALIZATION LOG
 loadDiscordState(); loadRoblox(); loadValorantStats();
 setInterval(loadDiscordState, 15000); 
 setInterval(loadRoblox, 60000);
-setInterval(loadValorantStats, 120000); // Check the parser for updates every 2 minutes!
+setInterval(loadValorantStats, 120000);
