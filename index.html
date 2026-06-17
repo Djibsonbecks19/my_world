@@ -8,48 +8,65 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="theme-gold"> 
 
 <video id="bg-video" autoplay loop playsinline>
-  <source src="darkside.mp4" type="video/mp4">
+  <source src="lock_in.mp4" type="video/mp4">
 </video>
 <div id="overlay"></div>
 <div id="vignette"></div>
+<div id="scanlines"></div>
 
-<div class="topbar">
+<div class="topbar hud-element">
   <div class="topbar-left">
     <div class="tb-dot"></div>
     <div class="tb-line"></div>
     <span class="tb-label">Profile</span>
   </div>
+  
+  <div id="topbar-controls-dock"></div>
+
   <div class="topbar-right">
     <div class="tb-stat">
       <div class="tb-ind" id="tb-dc-dot"></div>
       <span id="tb-dc-lbl">Discord</span>
     </div>
     <div class="tb-stat">
-      <div class="tb-ind" id="tb-rblx-dot" style="background: #c9a96e;"></div>
+      <div class="tb-ind" id="tb-rblx-dot"></div>
       <span id="tb-rblx-lbl">Roblox</span>
     </div>
   </div>
 </div>
 
+<button id="prev-video-btn" class="edge-arrow-btn left-side hud-element hidden-by-default" title="Previous Video">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+</button>
+
+<button id="next-video-btn" class="edge-arrow-btn right-side hud-element hidden-by-default" title="Next Video">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+</button>
+
 <div class="page">
   
-  <div class="video-toggle-container">
-    <button id="toggle-video-btn" class="video-btn">
-      <span class="btn-text">See Video</span>
-      <span class="btn-icon">
-        <svg class="icon-arrow icon-down" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-        <svg class="icon-arrow icon-up" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      </span>
-    </button>
+  <div id="controls-wrapper-box" class="hud-element">
+    <div class="controls-row">
+      <button id="toggle-video-btn" class="video-btn">
+        <span class="btn-text">See Video</span>
+        <span class="btn-icon">
+          <svg class="icon-arrow icon-down" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          <svg class="icon-arrow icon-up" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </span>
+      </button>
+
+      <button id="theme-cycle-btn" class="video-btn" title="Cycle Built-In Theme Accents">
+        <span class="theme-swatch"></span>
+        <span id="theme-label">Gold</span>
+      </button>
+    </div>
   </div>
 
   <div class="panel" id="main-panel">
-
     <div class="pane">
-
       <div class="pane-head">
         <div class="pane-icon discord">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -58,13 +75,13 @@
         </div>
         <div>
           <div class="pane-platform">Discord</div>
-          <div class="pane-user" id="dc-user">Loading...</div>
+          <div class="pane-user" id="dc-user"><span class="skeleton-text" style="width:110px;"></span></div>
         </div>
       </div>
 
       <div class="status-row">
         <div class="s-dot offline" id="dc-dot"></div>
-        <span class="s-label" id="dc-status">Fetching...</span>
+        <span class="s-label" id="dc-status"><span class="skeleton-text" style="width:60px;"></span></span>
         <span class="s-custom" id="dc-custom"></span>
       </div>
 
@@ -74,22 +91,17 @@
       </div>
 
       <div class="lanyard-wrap">
-        <img
-          src="https://lanyard.cnrad.dev/api/819598941510959175?theme=dark&idleMessage=Currently%20making%20memories%20with%20my%20favorite%20person%20%E2%9C%A8"
-          alt="Discord presence card"
-        >
+        <img src="https://lanyard.cnrad.dev/api/819598941510959175?theme=dark&idleMessage=Currently%20making%20memories%20with%20my%20favorite%20person%20%E2%9C%A8" alt="Discord presence card">
       </div>
-
     </div>
 
     <div class="pane">
-
       <div class="pane-head">
         <div class="pane-icon roblox">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="4" width="16" height="16" rx="2" stroke="#c9a96e" stroke-width="1.5"/>
-            <rect x="8.5" y="8.5" width="3" height="3" fill="#c9a96e"/>
-            <rect x="12.5" y="12.5" width="3" height="3" fill="#c9a96e"/>
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="8.5" y="8.5" width="3" height="3" fill="currentColor"/>
+            <rect x="12.5" y="12.5" width="3" height="3" fill="currentColor"/>
           </svg>
         </div>
         <div>
@@ -102,13 +114,13 @@
         <div class="rblx-av" id="rblx-av">
           <img id="rblx-av-img" src="" alt="Roblox avatar">
           <svg id="rblx-av-svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="9" r="4" stroke="rgba(201,169,110,0.55)" stroke-width="1.5"/>
-            <path d="M4 20c0-3.5 3.6-6 8-6s8 2.5 8 6" stroke="rgba(201,169,110,0.55)" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="9" r="4" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+            <path d="M4 20c0-3.5 3.6-6 8-6s8 2.5 8 6" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
         <div>
-          <div class="rblx-display" id="rblx-display">tanqr_headchot</div>
-          <div class="rblx-handle" id="rblx-id-label">ID: loading...</div>
+          <div class="rblx-display">tanqr_headchot</div>
+          <div class="rblx-handle" id="rblx-id-label"><span class="skeleton-text" style="width:80px;"></span></div>
         </div>
       </div>
 
@@ -117,48 +129,51 @@
           <circle cx="12" cy="12" r="3"/>
           <path d="M12 2v2m0 16v2M2 12h2m16 0h2" stroke-linecap="round"/>
         </svg>
-        <span class="pres-state" id="rblx-pres-state">Loading...</span>
+        <span class="pres-state" id="rblx-pres-state"><span class="skeleton-text" style="width:70px;"></span></span>
         <span class="pres-game" id="rblx-pres-game"></span>
       </div>
 
       <div class="stat-grid">
         <div class="stat-cell">
           <div class="stat-lbl">Friends</div>
-          <div class="stat-val" id="rblx-friends">—</div>
+          <div class="stat-val" id="rblx-friends"><span class="skeleton-text" style="width:30px;"></span></div>
         </div>
         <div class="stat-cell">
           <div class="stat-lbl">Joined</div>
-          <div class="stat-val" id="rblx-joined">—</div>
+          <div class="stat-val" id="rblx-joined"><span class="skeleton-text" style="width:40px;"></span></div>
         </div>
         <div class="stat-cell">
           <div class="stat-lbl">Status</div>
-          <div class="stat-val" id="rblx-status">—</div>
+          <div class="stat-val" id="rblx-status"><span class="skeleton-text" style="width:50px;"></span></div>
         </div>
         <div class="stat-cell">
           <div class="stat-lbl">User ID</div>
-          <div class="stat-val" id="rblx-uid">—</div>
+          <div class="stat-val" id="rblx-uid"><span class="skeleton-text" style="width:65px;"></span></div>
         </div>
       </div>
-
     </div>
-
   </div>
 </div>
 
-<div class="video-controls">
+<div class="video-controls hud-element">
   <button id="play-btn" class="video-control-btn" title="Play/Pause">
     <svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
     <svg class="icon-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
   </button>
   <div class="progress-container">
     <input type="range" id="video-progress" min="0" max="100" step="0.1" value="0">
+    <div id="timeline-bubble" class="scrub-tooltip">0:00</div>
   </div>
 </div>
 
-<div class="audio-controls">
+<div class="audio-controls hud-element">
   <button id="mute-btn" class="audio-toggle-btn" title="Mute/Unmute Audio">
-    <svg class="volume-icon-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-    <svg class="volume-icon-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+    <div id="music-waveform" class="waveform-container">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
   </button>
   <div class="slider-container">
     <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.1">
@@ -166,6 +181,5 @@
 </div>
 
 <script src="script.js"></script>
-
 </body>
 </html>

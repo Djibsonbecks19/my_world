@@ -1,6 +1,6 @@
 var API = window.location.port === '3000' ? '' : 'http://localhost:3000';
 
-// ── DISCORD API INTEGRATION ──
+// ── DATA FETCH RUNNERS ──
 async function loadDiscord() {
   try {
     var res = await fetch('https://api.lanyard.rest/v1/users/819598941510959175');
@@ -10,7 +10,6 @@ async function loadDiscord() {
     var u = data.discord_user;
 
     document.getElementById('dc-user').textContent = u.global_name || u.username || 'tanqr_headchot';
-
     var s = data.discord_status || 'offline';
     var sMap = { online: 'Online', idle: 'Idle', dnd: 'Do Not Disturb', offline: 'Offline' };
     document.getElementById('dc-dot').className = 's-dot ' + s;
@@ -34,14 +33,12 @@ async function loadDiscord() {
     if (s === 'dnd')     { dot.style.background = '#ef4444'; dot.style.boxShadow = 'none'; }
     if (s === 'offline') { dot.style.background = 'rgba(255,255,255,0.15)'; dot.style.boxShadow = 'none'; }
     document.getElementById('tb-dc-lbl').textContent = sMap[s] || 'Discord';
-
   } catch (e) {
     document.getElementById('dc-user').textContent = 'tanqr_headchot';
     document.getElementById('dc-status').textContent = 'Unavailable';
   }
 }
 
-// ── ROBLOX API INTEGRATION ──
 async function loadRoblox() {
   try {
     var idRes = await fetch(API + '/api/roblox/userid', {
@@ -49,9 +46,7 @@ async function loadRoblox() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: 'tanqr_headchot' })
     });
-
     if (!idRes.ok) { showRblxFail(); return; }
-
     var idData = await idRes.json();
     var uid = idData && idData.data && idData.data[0] ? idData.data[0].id : null;
     if (!uid) { showRblxFail(); return; }
@@ -63,176 +58,197 @@ async function loadRoblox() {
       var imgUrl = d && d.data && d.data[0] ? d.data[0].imageUrl : null;
       if (imgUrl) {
         var img = document.getElementById('rblx-av-img');
-        img.src = imgUrl;
-        img.style.display = 'block';
+        img.src = imgUrl; img.style.display = 'block';
         document.getElementById('rblx-av-svg').style.display = 'none';
       }
     });
 
     fetchJSON(API + '/api/roblox/user/' + uid).then(function(d) {
-      if (d && d.created) {
-        document.getElementById('rblx-joined').textContent = new Date(d.created).getFullYear();
-      }
+      if (d && d.created) document.getElementById('rblx-joined').textContent = new Date(d.created).getFullYear();
     });
 
     fetchJSON(API + '/api/roblox/friends/' + uid).then(function(d) {
-      if (d && d.count != null) {
-        document.getElementById('rblx-friends').textContent = d.count;
-      }
+      if (d && d.count != null) document.getElementById('rblx-friends').textContent = d.count;
     });
 
     fetch(API + '/api/roblox/presence', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userIds: [uid] })
-    }).then(function(r) {
-      return r.json();
-    }).then(function(d) {
+    }).then(function(r) { return r.json(); }).then(function(d) {
       var p = d && d.userPresences ? d.userPresences[0] : null;
       if (p) {
         var presMap = { 0: 'Offline', 1: 'Online', 2: 'In Game', 3: 'In Studio' };
         var label = presMap[p.userPresenceType] || 'Unknown';
         document.getElementById('rblx-pres-state').textContent = label;
         document.getElementById('rblx-status').textContent = label;
-        document.getElementById('tb-rblx-lbl').textContent = label;
         if (p.lastLocation && p.userPresenceType === 2) {
           document.getElementById('rblx-pres-game').textContent = p.lastLocation.slice(0, 18);
         }
       }
-    }).catch(function() {
-      document.getElementById('rblx-pres-state').textContent = 'Unavailable';
     });
-
-  } catch (e) {
-    showRblxFail();
-  }
+  } catch (e) { showRblxFail(); }
 }
 
-async function fetchJSON(url) {
-  try {
-    var r = await fetch(url);
-    return r.ok ? await r.json() : null;
-  } catch (e) {
-    return null;
-  }
-}
-
+async function fetchJSON(url) { try { var r = await fetch(url); return r.ok ? await r.json() : null; } catch (e) { return null; } }
 function showRblxFail() {
   document.getElementById('rblx-pres-state').textContent = 'Api not running';
-  var ids = ['rblx-friends', 'rblx-joined', 'rblx-status', 'rblx-uid'];
-  ids.forEach(function(id) {
-    document.getElementById(id).textContent = '—';
-  });
+  ['rblx-friends', 'rblx-joined', 'rblx-status', 'rblx-uid'].forEach(function(id) { document.getElementById(id).textContent = '—'; });
 }
 
-// ── INTERACTIVE INTERFACES INITIALIZER ──
+// ── MAIN RUNTIME ARCHITECTURE ──
 document.addEventListener('DOMContentLoaded', function() {
   var video = document.getElementById('bg-video');
   
-  // Audio UI Selectors
-  var muteBtn = document.getElementById('mute-btn');
-  var volumeSlider = document.getElementById('volume-slider');
-  var iconOn = muteBtn.querySelector('.volume-icon-on');
-  var iconMuted = muteBtn.querySelector('.volume-icon-muted');
-  
-  // Video Media UI Selectors
-  var playBtn = document.getElementById('play-btn');
-  var videoProgress = document.getElementById('video-progress');
-  var iconPlay = playBtn.querySelector('.icon-play');
-  var iconPause = playBtn.querySelector('.icon-pause');
-  
+  // Controls Position Anchors
+  var controlsBox = document.getElementById('controls-wrapper-box');
+  var topbarDock = document.getElementById('topbar-controls-dock');
+  var pageContainer = document.querySelector('.page');
   var toggleVideoBtn = document.getElementById('toggle-video-btn');
   var btnText = toggleVideoBtn.querySelector('.btn-text');
 
-  // SAFE ANTI-JUMPSCARE CONFIGURATION: Keep muted on launch 
-  var defaultVolume = 0.1;
-  video.volume = defaultVolume;
-  volumeSlider.value = defaultVolume;
-  var lastVolumeValue = defaultVolume;
+  // Built-in Accent Variations
+  var themeBtn = document.getElementById('theme-cycle-btn');
+  var themeLabel = document.getElementById('theme-label');
+  var themes = [
+    { class: 'theme-gold', label: 'Gold' },
+    { class: 'theme-blue', label: 'Blue' },
+    { class: 'theme-pink', label: 'Pink' },
+    { class: 'theme-mint', label: 'Mint' }
+  ];
+  var currentThemeIndex = 0;
 
-  video.muted = true;
-  iconOn.style.display = 'none';
-  iconMuted.style.display = 'block';
+  // NEW: VIDEO PLAYLIST MANAGEMENT ENGINE
+  var videos = ['lock_in.mp4', 'kira.mp4', 'goku_edit.mp4', 'darkside.mp4'];
+  var currentVideoIndex = 0;
+  var prevVideoBtn = document.getElementById('prev-video-btn');
+  var nextVideoBtn = document.getElementById('next-video-btn');
 
-  // ── RIGHT ALIGNED AUDIO EVENTS ──
+  // Media Interface Elements
+  var muteBtn = document.getElementById('mute-btn');
+  var volumeSlider = document.getElementById('volume-slider');
+  var musicWaveform = document.getElementById('music-waveform');
+  var playBtn = document.getElementById('play-btn');
+  var videoProgress = document.getElementById('video-progress');
+  var timelineBubble = document.getElementById('timeline-bubble');
+  var iconPlay = playBtn.querySelector('.icon-play');
+  var iconPause = playBtn.querySelector('.icon-pause');
+
+  // Default Fallbacks
+  video.volume = 0.1; volumeSlider.value = 0.1;
+  var lastVolumeValue = 0.1; video.muted = true;
+
+  // RE-INDEX VIDEO METHOD
+  function switchVideo(index) {
+    currentVideoIndex = (index + videos.length) % videos.length;
+    
+    // Smooth transition trick: pause, switch track source, update and reload
+    video.pause();
+    var source = video.querySelector('source');
+    if (source) {
+      source.src = videos[currentVideoIndex];
+      video.load();
+      
+      // Keep track of audio states instantly on reload
+      if (!video.paused) {
+        iconPause.style.display = 'block';
+        iconPlay.style.display = 'none';
+      }
+      video.play().catch(function(err) { console.log("Playback engine waiting hook auto call"); });
+    }
+  }
+
+  // Hooking Arrow Actions
+  prevVideoBtn.addEventListener('click', function(e) {
+    e.stopPropagation(); // Avoid triggering screen movement timers
+    switchVideo(currentVideoIndex - 1);
+  });
+
+  nextVideoBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    switchVideo(currentVideoIndex + 1);
+  });
+
+  // CONTROLS TELEPORTATION LOGIC
+  function adjustControlsPosition(isFocused) {
+    if (isFocused) {
+      controlsBox.classList.add('docked-top');
+      topbarDock.appendChild(controlsBox);
+    } else {
+      controlsBox.classList.remove('docked-top');
+      pageContainer.insertBefore(controlsBox, document.getElementById('main-panel'));
+    }
+  }
+
+  toggleVideoBtn.addEventListener('click', function() {
+    var isFocused = document.body.classList.toggle('video-focused');
+    
+    if (isFocused) {
+      btnText.textContent = 'Show Card';
+      adjustControlsPosition(true);
+      resetIdleTimer();
+    } else {
+      btnText.textContent = 'See Video';
+      adjustControlsPosition(false);
+      showAllHUD();
+      clearTimeout(idleTimer);
+    }
+  });
+
+  // PRESET CYCLER
+  themeBtn.addEventListener('click', function() {
+    document.body.classList.remove(themes[currentThemeIndex].class);
+    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+    document.body.classList.add(themes[currentThemeIndex].class);
+    themeLabel.textContent = themes[currentThemeIndex].label;
+  });
+
+  // MEDIA HARDWARE HOOKS
   muteBtn.addEventListener('click', function() {
     if (video.muted) {
       video.muted = false;
-      if(video.volume === 0) {
-        video.volume = lastVolumeValue || defaultVolume;
-        volumeSlider.value = video.volume;
-      }
-      iconOn.style.display = 'block';
-      iconMuted.style.display = 'none';
+      if(video.volume === 0) { video.volume = lastVolumeValue || 0.1; volumeSlider.value = video.volume; }
+      musicWaveform.classList.add('playing');
     } else {
-      video.muted = true;
-      iconOn.style.display = 'none';
-      iconMuted.style.display = 'block';
+      video.muted = true; musicWaveform.classList.remove('playing');
     }
   });
 
   volumeSlider.addEventListener('input', function(e) {
-    var val = parseFloat(e.target.value);
-    video.volume = val;
-    if (val > 0) {
-      video.muted = false;
-      lastVolumeValue = val;
-      iconOn.style.display = 'block';
-      iconMuted.style.display = 'none';
-    } else {
-      video.muted = true;
-      iconOn.style.display = 'none';
-      iconMuted.style.display = 'block';
-    }
+    var val = parseFloat(e.target.value); video.volume = val;
+    if (val > 0) { video.muted = false; lastVolumeValue = val; musicWaveform.classList.add('playing'); }
+    else { video.muted = true; musicWaveform.classList.remove('playing'); }
   });
 
-  // ── LEFT ALIGNED VIDEO PLAYBACK EVENTS ──
   playBtn.addEventListener('click', function() {
-    if (video.paused) {
-      video.play();
-      iconPause.style.display = 'block';
-      iconPlay.style.display = 'none';
-    } else {
-      video.pause();
-      iconPause.style.display = 'none';
-      iconPlay.style.display = 'block';
-    }
+    if (video.paused) { video.play(); iconPause.style.display = 'block'; iconPlay.style.display = 'none'; }
+    else { video.pause(); iconPause.style.display = 'none'; iconPlay.style.display = 'block'; }
   });
 
-  // Automatically update progress slider timeline as video plays natively
-  video.addEventListener('timeupdate', function() {
+  video.addEventListener('timeupdate', function() { if (video.duration) videoProgress.value = (video.currentTime / video.duration) * 100; });
+  videoProgress.addEventListener('input', function(e) { if (video.duration) video.currentTime = (parseFloat(e.target.value) / 100) * video.duration; });
+
+  videoProgress.addEventListener('mousemove', function(e) {
     if (!video.duration) return;
-    var percentage = (video.currentTime / video.duration) * 100;
-    videoProgress.value = percentage;
+    var rect = videoProgress.getBoundingClientRect();
+    var percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+    var targetSecs = percent * video.duration;
+    var mins = Math.floor(targetSecs / 60), secs = Math.floor(targetSecs % 60);
+    timelineBubble.textContent = mins + ':' + (secs < 10 ? '0' + secs : secs);
+    timelineBubble.style.left = (percent * 100) + '%';
   });
 
-  // Drag/Click specific track lines to jump directly to target timeline positions
-  videoProgress.addEventListener('input', function(e) {
-    if (!video.duration) return;
-    var targetTime = (parseFloat(e.target.value) / 100) * video.duration;
-    video.currentTime = targetTime;
-  });
+  // SMART INTERFACE HUD HOVER DIMMER TIMEOUT MECHANICS
+  var idleTimer;
+  function resetIdleTimer() {
+    if (!document.body.classList.contains('video-focused')) { showAllHUD(); return; }
+    showAllHUD(); clearTimeout(idleTimer); idleTimer = setTimeout(hideAllHUD, 3000);
+  }
+  function hideAllHUD() { document.querySelectorAll('.hud-element').forEach(function(el) { el.classList.add('hud-hidden'); }); }
+  function showAllHUD() { document.querySelectorAll('.hud-element').forEach(function(el) { el.classList.remove('hud-hidden'); }); }
 
-  // ── MAIN UPPER TOGGLE CONTROLLER (CARD TOGGLE) ──
-  toggleVideoBtn.addEventListener('click', function() {
-    // Unmutes context gracefully ONLY if user explicitly wants to listen to it
-    if (video.muted && video.volume > 0) {
-      // Uncomment lines below if you want "See Video" to automatically turn on sound:
-      // video.muted = false;
-      // iconOn.style.display = 'block';
-      // iconMuted.style.display = 'none';
-    }
-    
-    var isFocused = document.body.classList.toggle('video-focused');
-    if (isFocused) {
-      btnText.textContent = 'Show Card';
-    } else {
-      btnText.textContent = 'See Video';
-    }
-  });
+  ['mousemove', 'keydown', 'click'].forEach(function(ev) { window.addEventListener(ev, resetIdleTimer); });
 });
 
-loadDiscord();
-loadRoblox();
-setInterval(loadDiscord, 30000);
-setInterval(loadRoblox, 60000);
+loadDiscord(); loadRoblox();
+setInterval(loadDiscord, 30000); setInterval(loadRoblox, 60000);
