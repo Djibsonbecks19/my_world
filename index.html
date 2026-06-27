@@ -85,7 +85,7 @@
         <img src="https://lanyard.cnrad.dev/api/819598941510959175?theme=dark&idleMessage=Currently%20making%20memories%20with%20my%20favorite%20person%20%E2%9C%A8" alt="Discord presence card" style="width: 100%; border-radius: 8px; display: block;">
       </div>
 
-      <div class="guestbook-area" style="margin-top: auto;">
+      <div class="guestbook-area">
         <div class="gb-head">ANONYMOUS SERVER GUESTBOOK</div>
         <div class="gb-input-wrap">
           <span class="gb-prompt">&gt;</span>
@@ -93,12 +93,11 @@
         </div>
         <div id="gb-feedback" class="gb-status"></div>
       </div>
-      <div id="guestbook-section" class="hud-element">
-        <h3>TERMINAL BROADCAST LOGS</h3>
-          <div id="gb-live-feed">
-          </div>
-      </div>
 
+      <div id="guestbook-section">
+        <h3>TERMINAL BROADCAST LOGS</h3>
+        <div id="gb-live-feed"></div>
+      </div>
     </div>
 
     <div class="pane">
@@ -137,7 +136,6 @@
         </svg>
         <span class="pres-state" id="rblx-pres-state"><span class="skeleton-text" style="width:70px;"></span></span>
         <span class="pres-game" id="rblx-pres-game"></span>
-        
         <a id="rblx-join-btn" href="roblox://placeId=142823291" class="rblx-join-shortcut hidden">JOIN MM2</a>
       </div>
 
@@ -148,7 +146,7 @@
           <div class="val-stats">
             <div class="val-stat-item">
               <span class="v-lbl">PEAK RATING:</span> 
-              <span id="val-tier" class="v-val">LOADING... OR BROKEN...</span>
+              <span id="val-tier" class="v-val">LOADING...</span>
             </div>
           </div>
         </div>
@@ -162,9 +160,7 @@
       </div>
     </div>
   </div>
-  
 </div>
-
 
 <div class="video-controls hud-element">
   <button id="play-btn" class="video-control-btn" title="Play/Pause">
