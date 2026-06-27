@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
   ];
   var currentThemeIndex = 0;
 
-  var videos = ['darkside.mp4', 'lock_in.mp4', 'kira.mp4', 'goku_edit.mp4'];
+  var videos = ['darkside.mp4', 'kaneki_1.mp4', 'kaneki_2.mp4', 'lock_in.mp4', 'kira.mp4', 'goku_edit.mp4'];
   var currentVideoIndex = 0;
   var prevVideoBtn = document.getElementById('prev-video-btn');
   var nextVideoBtn = document.getElementById('next-video-btn');
