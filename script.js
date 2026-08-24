@@ -1,9 +1,19 @@
-import { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit } from "./firebaseConfig.js";
+import { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit, doc, getDoc, setDoc, increment } from "./firebaseConfig.js";
 
 var API = 'https://my-world-scfp.onrender.com';
 
-// Webhook for Anonymous Guestbook Endpoint 
-var DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1516672212705218581/D9Y-gxXunyaWh00R0ForIJ5_yJqL4PRZz_8teGpW36pYPmP-eBvUdBLHhXKfwBC1L1IO";
+// ── VIDEO TRIM CONFIG (skip TikTok outro without editing video files) ──
+// "default" applies to any video not listed individually.
+// Adjust the number per-file once you see where each outro starts.
+var videoTrimSeconds = {
+  default: 3,
+  // 'vid7.mov': 2,
+  // 'vid14.mov': 4,
+};
+
+function getTrimFor(filename) {
+  return videoTrimSeconds[filename] != null ? videoTrimSeconds[filename] : videoTrimSeconds.default;
+}
 
 // ── AUDIO HARDWARE CONNECTOR (DYNAMIC RECONSTRUCTED MATRIX VISUALIZER) ──
 var audioCtx = null;
@@ -56,15 +66,13 @@ function renderFrequencies() {
 
 // ── LIVE GUESTBOOK FEED ENGINE ──
 function setupLiveFeed() {
-  const feedContainer = document.getElementById('gb-live-feed'); // Make sure you have this <div> in your HTML!
-  
+  const feedContainer = document.getElementById('gb-live-feed');
   if (!feedContainer) return;
 
-  // Query: Get messages, sorted by timestamp, limit to latest 10
   const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(10));
 
   onSnapshot(q, (snapshot) => {
-    feedContainer.innerHTML = ''; // Clear current list
+    feedContainer.innerHTML = '';
     snapshot.forEach((doc) => {
       const data = doc.data();
       const div = document.createElement('div');
@@ -74,8 +82,6 @@ function setupLiveFeed() {
     });
   });
 }
-
-// Start the listener when the page loads
 setupLiveFeed();
 
 // ── GENERAL LOG HUB ENDPOINTS ──
@@ -177,40 +183,22 @@ function showRblxFail() {
   ['rblx-friends', 'rblx-joined', 'rblx-status', 'rblx-uid'].forEach(function(id) { document.getElementById(id).textContent = '—'; });
 }
 
-// ── VALORANT LIVE PARSE SCROLLER CONNECTION (PEAK RATING MAP EXTRACTOR) ──
+// ── VALORANT LIVE PARSE SCROLLER CONNECTION (now routed through backend, no exposed key) ──
 async function loadValorantStats() {
   try {
-    var targetPlayer = encodeURIComponent('SN SonBecks#GameB');
-    var apiKey = "pmx_bee4a5a1f5ead9cc1cb9243a8512a4cd"; 
-
-    var response = await fetch(`https://api.parse.bot/scraper/6517942a-644e-4cbc-9349-6e6d5ddaa622/get_player_profile?player_id=${targetPlayer}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': apiKey
-      }
-    });
-    
+    var response = await fetch(API + '/api/valorant');
     if (!response.ok) {
       console.warn("Parser gateway route rejected or busy.");
       return;
     }
-    
     var json = await response.json();
-    
-    // Drill straight down into the validated API segments data object matrix
     if (json && json.data && json.data.segments && json.data.segments[1]) {
       var peakSegment = json.data.segments[1];
-      
       if (peakSegment.type === "peak-rating" && peakSegment.stats && peakSegment.stats.peakRating) {
         var ratingData = peakSegment.stats.peakRating;
-        
-        // Inject the verified textual string ("Platinum 2")
         if (ratingData.displayValue) {
           document.getElementById('val-tier').textContent = ratingData.displayValue.toUpperCase();
         }
-        
-        // Inject the verified tracking badge asset link from the nested metadata cluster
         if (ratingData.metadata && ratingData.metadata.iconUrl) {
           document.getElementById('val-rank-icon').src = ratingData.metadata.iconUrl;
         }
@@ -219,6 +207,98 @@ async function loadValorantStats() {
   } catch(e) {
     console.log("Scraper interface parsing exception occurred.", e);
   }
+}
+
+// ── NOW PLAYING (LAST.FM) ──
+// Get a free API key at https://www.last.fm/api/account/create
+var LASTFM_API_KEY = "YOUR_LASTFM_API_KEY";
+var LASTFM_USER = "YOUR_LASTFM_USERNAME";
+
+async function loadNowPlaying() {
+  try {
+    var url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_USER}&api_key=${LASTFM_API_KEY}&format=json&limit=1`;
+    var res = await fetch(url);
+    var json = await res.json();
+    var track = json && json.recenttracks && json.recenttracks.track ? json.recenttracks.track[0] : null;
+    if (!track) return;
+    var isPlaying = track['@attr'] && track['@attr'].nowplaying === 'true';
+    document.getElementById('np-label').textContent = isPlaying ? 'NOW PLAYING' : 'LAST PLAYED';
+    document.getElementById('np-track').textContent = track.name + ' — ' + track.artist['#text'];
+  } catch (e) { console.log("Now playing fetch skipped."); }
+}
+
+// ── VISITOR COUNTER (FIRESTORE) ──
+async function loadVisitorCount() {
+  try {
+    var ref = doc(db, "stats", "visitors");
+    var snap = await getDoc(ref);
+    var current = snap.exists() ? snap.data().count : 0;
+    await setDoc(ref, { count: increment(1) }, { merge: true });
+    document.getElementById('visitor-count').textContent = current + 1;
+  } catch (e) {
+    console.log("Visitor counter unavailable.");
+    document.getElementById('visitor-count').textContent = '—';
+  }
+}
+
+// ── ACHIEVEMENTS / BADGES ──
+var badges = [
+  { icon: '🎮', label: 'Roblox since 2019' },
+  { icon: '💬', label: 'Discord OG' },
+  { icon: '🎯', label: 'Valorant Plat+' },
+  { icon: '🌙', label: 'Night Owl' }
+];
+function renderBadges() {
+  var row = document.getElementById('badges-row');
+  if (!row) return;
+  badges.forEach(function(b) {
+    var el = document.createElement('div');
+    el.className = 'badge';
+    el.innerHTML = '<span>' + b.icon + '</span><span>' + b.label + '</span>';
+    row.appendChild(el);
+  });
+}
+
+// ── LAST UPDATED ──
+function setLastUpdated() {
+  var el = document.getElementById('last-updated');
+  if (!el) return;
+  var lastUpdateDate = "2026-08-24"; // change manually whenever you edit the site
+  var d = new Date(lastUpdateDate);
+  el.textContent = "Last updated: " + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ── CURSOR TRAIL PARTICLES (desktop only) ──
+function setupCursorTrail() {
+  if (window.matchMedia('(max-width: 640px)').matches) return;
+  var lastTime = 0;
+  window.addEventListener('mousemove', function(e) {
+    var now = Date.now();
+    if (now - lastTime < 40) return; // throttle
+    lastTime = now;
+    var p = document.createElement('div');
+    p.className = 'cursor-particle';
+    p.style.left = e.clientX + 'px';
+    p.style.top = e.clientY + 'px';
+    document.body.appendChild(p);
+    requestAnimationFrame(function() {
+      p.style.transform = 'translate(' + (Math.random() * 20 - 10) + 'px,' + (Math.random() * 20 - 10) + 'px) scale(0)';
+      p.style.opacity = '0';
+    });
+    setTimeout(function() { p.remove(); }, 650);
+  });
+}
+
+// ── AMBIENT CLICK SOUND ──
+function setupClickSound() {
+  var sfx = document.getElementById('click-sfx');
+  if (!sfx) return;
+  document.querySelectorAll('.video-btn, .edge-arrow-btn, .video-control-btn, .audio-toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      sfx.currentTime = 0;
+      sfx.play().catch(function() {});
+    });
+  });
 }
 
 // ── MAIN APPLICATION RUNTIME ──
@@ -240,7 +320,36 @@ document.addEventListener('DOMContentLoaded', function() {
   ];
   var currentThemeIndex = 0;
 
-  var videos = ['darkside.mp4', 'kaneki_1.mp4', 'kaneki_2.mp4', 'lock_in.mp4', 'kira.mp4', 'goku_edit.mp4'];
+  var videos = [
+    'darkside.mp4',
+    'kaneki_1.mp4',
+    'kaneki_2.mp4',
+    'lock_in.mp4',
+    'kira.mp4',
+    'goku_edit.mp4',
+    'vid1.mov',
+    'vid2.mov',
+    'vid3.mov',
+    'vid4.mov',
+    'vid5.mov',
+    'vid6.mov',
+    'vid7.mov',
+    'vid8.mov',
+    'vid9.mov',
+    'vid10.mov',
+    'vid11.mov',
+    'vid12.mov',
+    'vid13.mov',
+    'vid14.mov',
+    'vid15.mov',
+    'vid16.mov',
+    'vid17.mov',
+    'vid18.mov',
+    'vid19.mov',
+    'vid20.mov',
+    'vid21.mov'
+  ];  
+
   var currentVideoIndex = 0;
   var prevVideoBtn = document.getElementById('prev-video-btn');
   var nextVideoBtn = document.getElementById('next-video-btn');
@@ -279,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
   prevVideoBtn.addEventListener('click', function(e) { e.stopPropagation(); switchVideo(currentVideoIndex - 1); });
   nextVideoBtn.addEventListener('click', function(e) { e.stopPropagation(); switchVideo(currentVideoIndex + 1); });
 
-  // ── GUESTBOOK FIREBASE + DISCORD DUAL BROADCAST ENGINE ──
+  // ── GUESTBOOK: DUAL BROADCAST via BACKEND (secrets no longer exposed client-side) ──
   const guestbookField = document.getElementById('gb-field');
   const guestbookFeedback = document.getElementById('gb-feedback');
 
@@ -294,20 +403,18 @@ document.addEventListener('DOMContentLoaded', function() {
           guestbookFeedback.textContent = "BROADCASTING TO CHANNELS...";
           guestbookFeedback.style.color = "var(--accent-color, #f59e0b)";
 
-          // PIPELINE 1: Direct Webhook out to Discord (Independent)
+          // PIPELINE 1: Discord webhook via backend (key hidden server-side)
           try {
-            await fetch(DISCORD_WEBHOOK, {
+            await fetch(API + '/api/guestbook', {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                content: `📡 **[Guestbook Transmission]:** ${messageText}`
-              })
+              body: JSON.stringify({ message: messageText })
             });
           } catch (discordError) {
-            console.warn("Discord direct webhook pipeline issue:", discordError);
+            console.warn("Discord broadcast pipeline issue:", discordError);
           }
 
-          // PIPELINE 2: Cloud Firestore Backup (Isolated so it won't crash Discord)
+          // PIPELINE 2: Cloud Firestore Backup (isolated so it won't crash the broadcast)
           try {
             await addDoc(collection(db, "messages"), {
               text: messageText,
@@ -315,13 +422,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
           } catch (firebaseError) {
             console.error("Firebase cloud backup paused (Check your Firestore Rules):", firebaseError);
-            // We don't throw the error here, so the UI still hits success for your webhook!
           }
 
-          // Clear layout panel inputs on success
           guestbookField.value = '';
           guestbookFeedback.textContent = "TRANSMISSION SUCCESSFUL.";
-          guestbookFeedback.style.color = "#00ff66"; // Success Neon Green
+          guestbookFeedback.style.color = "#00ff66";
           
           setTimeout(() => { guestbookFeedback.textContent = ''; }, 3000);
 
@@ -391,7 +496,18 @@ document.addEventListener('DOMContentLoaded', function() {
     else { video.pause(); iconPause.style.display = 'none'; iconPlay.style.display = 'block'; }
   });
 
-  video.addEventListener('timeupdate', function() { if (video.duration) videoProgress.value = (video.currentTime / video.duration) * 100; });
+  // Progress bar + outro-skip logic merged into one timeupdate listener
+  video.addEventListener('timeupdate', function() {
+    if (!video.duration) return;
+    videoProgress.value = (video.currentTime / video.duration) * 100;
+
+    var trim = getTrimFor(videos[currentVideoIndex]);
+    if (video.currentTime >= video.duration - trim) {
+      video.currentTime = 0;
+      video.play();
+    }
+  });
+
   videoProgress.addEventListener('input', function(e) { if (video.duration) video.currentTime = (parseFloat(e.target.value) / 100) * video.duration; });
 
   videoProgress.addEventListener('mousemove', function(e) {
@@ -413,10 +529,16 @@ document.addEventListener('DOMContentLoaded', function() {
   function showAllHUD() { document.querySelectorAll('.hud-element').forEach(function(el) { el.classList.remove('hud-hidden'); }); }
 
   ['mousemove', 'keydown', 'click'].forEach(function(ev) { window.addEventListener(ev, resetIdleTimer); });
+
+  renderBadges();
+  setLastUpdated();
+  setupCursorTrail();
+  setupClickSound();
 });
 
 // INITIALIZATION LOG
-loadDiscordState(); loadRoblox(); loadValorantStats();
+loadDiscordState(); loadRoblox(); loadValorantStats(); loadNowPlaying(); loadVisitorCount();
 setInterval(loadDiscordState, 15000); 
 setInterval(loadRoblox, 60000);
 setInterval(loadValorantStats, 120000);
+setInterval(loadNowPlaying, 30000);

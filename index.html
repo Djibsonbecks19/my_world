@@ -47,6 +47,20 @@
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
 </button>
 
+<!-- Now Playing (Last.fm) -->
+<div class="mini-widget now-playing hud-element" id="now-playing">
+  <div class="np-icon">♫</div>
+  <div class="np-text">
+    <div class="np-label" id="np-label">NOT PLAYING</div>
+    <div class="np-track" id="np-track"></div>
+  </div>
+</div>
+
+<!-- Visitor Counter -->
+<div class="mini-widget visitor-counter hud-element" id="visitor-counter">
+  <span id="visitor-count">···</span> visitors
+</div>
+
 <div class="page">
   
   <div id="controls-wrapper-box" class="hud-element">
@@ -98,6 +112,8 @@
         <h3>TERMINAL BROADCAST LOGS</h3>
         <div id="gb-live-feed"></div>
       </div>
+
+      <div class="badges-row" id="badges-row"></div>
     </div>
 
     <div class="pane">
@@ -162,6 +178,8 @@
   </div>
 </div>
 
+<div class="last-updated hud-element" id="last-updated"></div>
+
 <div class="video-controls hud-element">
   <button id="play-btn" class="video-control-btn" title="Play/Pause">
     <svg class="icon-pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
@@ -187,6 +205,8 @@
     <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.1">
   </div>
 </div>
+
+<audio id="click-sfx" src="click.mp3" preload="auto"></audio>
 
 <script type="module" src="script.js"></script>
 </body>

@@ -8,7 +8,11 @@ import {
   onSnapshot, 
   query, 
   orderBy, 
-  limit 
+  limit,
+  doc,
+  getDoc,
+  setDoc,
+  increment
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -26,4 +30,4 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Export db and firestore helpers so script.js can use them
-export { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit };
+export { db, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit, doc, getDoc, setDoc, increment };
