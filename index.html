@@ -11,7 +11,7 @@
 </head>
 <body class="theme-gold">
 
-<!-- ── BOOT SEQUENCE (first visit of the session only) ── -->
+<!-- BOOT SEQUENCE (first visit of the session only) -->
 <div id="boot-sequence">
   <div class="boot-lines" id="boot-lines"></div>
 </div>
@@ -23,11 +23,10 @@
 <div id="vignette"></div>
 <div id="scanlines"></div>
 
-<div class="topbar hud-element">
-  <div class="topbar-left">
-    <div class="tb-dot"></div>
-    <div class="tb-line"></div>
-    <span class="tb-label">Mouhamad's HUB</span>
+<header class="topbar hud-element">
+  <div class="tb-brand">
+    <span class="tb-mark">M</span>
+    <span class="tb-wordmark">Mouhamad's Hub</span>
   </div>
 
   <nav class="screen-nav" id="screen-nav">
@@ -38,17 +37,21 @@
     <button class="sn-btn" data-screen="guestbook">Guestbook</button>
   </nav>
 
-  <div class="topbar-right">
-    <div class="tb-stat">
+  <div class="tb-right">
+    <div class="tb-chip">
       <div class="tb-ind" id="tb-dc-dot"></div>
       <span id="tb-dc-lbl">Discord</span>
     </div>
-    <div class="tb-stat">
+    <div class="tb-chip">
       <div class="tb-ind" id="tb-rblx-dot"></div>
       <span id="tb-rblx-lbl">Roblox</span>
     </div>
+    <button id="cmdk-btn" class="tb-icon-btn" title="Command palette (Ctrl/Cmd+K)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+    </button>
+    <button class="tb-cta" data-goto="guestbook">Guestbook</button>
   </div>
-</div>
+</header>
 
 <button id="prev-video-btn" class="edge-arrow-btn left-side hud-element hidden-by-default" title="Previous Video">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -60,7 +63,7 @@
 
 <!-- Now Playing (Last.fm via Lanyard/Spotify) -->
 <div class="mini-widget now-playing hud-element" id="now-playing">
-  <div class="np-icon">♫</div>
+  <div class="np-icon">note</div>
   <div class="np-text">
     <div class="np-label" id="np-label">NOT PLAYING</div>
     <div class="np-track" id="np-track"></div>
@@ -69,7 +72,7 @@
 
 <!-- Visitor Counter -->
 <div class="mini-widget visitor-counter hud-element" id="visitor-counter">
-  <span id="visitor-count">···</span> visitors
+  <span id="visitor-count">...</span> visitors
 </div>
 
 <div class="page">
@@ -88,14 +91,10 @@
         <span class="theme-swatch"></span>
         <span id="theme-label">Gold</span>
       </button>
-
-      <button id="cmdk-btn" class="video-btn" title="Command Palette">
-        <span>⌘K</span>
-      </button>
     </div>
   </div>
 
-  <!-- ══════════════ SCREEN: HOME ══════════════ -->
+  <!-- SCREEN: HOME -->
   <section class="screen active" id="screen-home">
     <div class="panel" id="main-panel">
 
@@ -162,14 +161,14 @@
         </div>
 
         <button class="screen-teaser-btn" data-goto="stats">
-          <span>Full stats &amp; Valorant HUD</span>
+          <span>Full stats and Valorant HUD</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
       </div>
     </div>
   </section>
 
-  <!-- ══════════════ SCREEN: STATS ══════════════ -->
+  <!-- SCREEN: STATS -->
   <section class="screen" id="screen-stats">
     <div class="wide-panel">
       <div class="section-head">
@@ -204,10 +203,10 @@
         <div class="stats-card weather-card">
           <div class="stats-card-head">Local Weather</div>
           <div class="weather-body">
-            <span class="weather-icon" id="weather-icon">—</span>
+            <span class="weather-icon" id="weather-icon">-</span>
             <div>
-              <div class="weather-temp" id="weather-temp">--°</div>
-              <div class="weather-desc" id="weather-desc">Loading forecast…</div>
+              <div class="weather-temp" id="weather-temp">--</div>
+              <div class="weather-desc" id="weather-desc">Loading forecast...</div>
             </div>
           </div>
         </div>
@@ -221,7 +220,7 @@
     </div>
   </section>
 
-  <!-- ══════════════ SCREEN: PROJECTS ══════════════ -->
+  <!-- SCREEN: PROJECTS -->
   <section class="screen" id="screen-projects">
     <div class="wide-panel">
       <div class="section-head">
@@ -236,7 +235,7 @@
     </div>
   </section>
 
-  <!-- ══════════════ SCREEN: ABOUT ══════════════ -->
+  <!-- SCREEN: ABOUT -->
   <section class="screen" id="screen-about">
     <div class="wide-panel about-panel">
       <div class="section-head">
@@ -246,15 +245,15 @@
 
       <div class="about-body">
         <p class="about-bio">
-          Hey, I'm Mouhamad — this page is my little corner of the internet: a live dashboard of
+          Hey, I'm Mouhamad - this page is my little corner of the internet: a live dashboard of
           whatever I'm up to across Discord, Roblox, and Valorant, wrapped around video edits I like.
           Built by hand, updated by hand, no templates.
         </p>
 
         <div class="socials-row">
-          <a class="social-chip" href="#" id="social-discord">Discord — Mouhamadx</a>
-          <a class="social-chip" href="#" id="social-roblox">Roblox — tanqr_headchot</a>
-          <a class="social-chip" href="#" id="social-valorant">Valorant — SonBecks#GameB</a>
+          <a class="social-chip" href="#" id="social-discord">Discord - Mouhamadx</a>
+          <a class="social-chip" href="#" id="social-roblox">Roblox - tanqr_headchot</a>
+          <a class="social-chip" href="#" id="social-valorant">Valorant - SonBecks#GameB</a>
         </div>
 
         <div class="badges-row" id="badges-row"></div>
@@ -262,7 +261,7 @@
     </div>
   </section>
 
-  <!-- ══════════════ SCREEN: GUESTBOOK ══════════════ -->
+  <!-- SCREEN: GUESTBOOK -->
   <section class="screen" id="screen-guestbook">
     <div class="wide-panel guestbook-panel">
       <div class="section-head">
@@ -316,12 +315,12 @@
   </div>
 </div>
 
-<!-- ── COMMAND PALETTE ── -->
+<!-- COMMAND PALETTE -->
 <div id="cmdk-overlay" class="cmdk-overlay">
   <div class="cmdk-box">
     <div class="cmdk-input-row">
-      <span class="cmdk-prompt">⌘</span>
-      <input type="text" id="cmdk-input" placeholder="Jump to a screen or run a command…" autocomplete="off">
+      <span class="cmdk-prompt">/</span>
+      <input type="text" id="cmdk-input" placeholder="Jump to a screen or run a command..." autocomplete="off">
       <span class="cmdk-esc">ESC</span>
     </div>
     <div class="cmdk-list" id="cmdk-list"></div>
